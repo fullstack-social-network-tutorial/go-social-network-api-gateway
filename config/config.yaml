@@ -1,0 +1,4 @@
+host:
+  auth: http://localhost:3000
+key:
+  apiGateway: "API-GATEWAY-KEY"
