@@ -1,4 +1,9 @@
-host:
+address:
+  host: localhost 
+  port: 8080
+inbound:
   auth: http://localhost:3000
+outbound:
+  auth: http://localhost:8080
 key:
   apiGateway: "API-GATEWAY-KEY"

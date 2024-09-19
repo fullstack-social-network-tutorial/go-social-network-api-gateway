@@ -5,17 +5,17 @@ import (
 )
 
 type AuthHandler struct {
-	host          string
+	address       string
 	apiGatewayKey string
 }
 
-func NewAuthHandler(host string, apiGatewayKey string) AuthHandler {
-	return AuthHandler{host: host}
+func NewAuthHandler(address string, apiGatewayKey string) AuthHandler {
+	return AuthHandler{address: address}
 }
 
-func (h *AuthHandler) Login(w http.ResponseWriter, r http.Request) {
+func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	//  Create a new HTTP Request
-	request, err := http.NewRequest(http.MethodPost, h.host, r.Body)
+	request, err := http.NewRequest(http.MethodPost, h.address, r.Body)
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return

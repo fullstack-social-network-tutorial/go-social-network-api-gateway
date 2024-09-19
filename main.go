@@ -2,9 +2,10 @@ package main
 
 import (
 	"context"
-	"go-service/app"
+	"fmt"
 	"go-service/internal/configs"
 	"go-service/internal/controller"
+	"log"
 	"net/http"
 	"os"
 
@@ -14,10 +15,19 @@ import (
 func main() {
 	mux := http.NewServeMux()
 	ctx := context.Background()
-	app := app.NewApplication(ctx)
-	ctr := controller.NewAPIController(ctx, app, mux)
+	configs, err := getConfig()
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	ctr := controller.NewAPIController(ctx, mux, configs)
 	ctr.SetUpRoute()
-	http.ListenAndServe(":8081", nil)
+
+	done := make(chan bool)
+	go http.ListenAndServe(fmt.Sprintf("%v:%v", configs.Address.Host, configs.Port), nil)
+	log.Printf("Server started at %v:%v", configs.Host, configs.Port)
+	<-done
 }
 
 func getConfig() (configs.Config, error) {

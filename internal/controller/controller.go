@@ -2,23 +2,28 @@ package controller
 
 import (
 	"context"
-	"go-service/app"
+	"go-service/internal/configs"
+	"go-service/internal/controller/handlers"
 	"net/http"
 )
 
 type apiController struct {
-	ctx context.Context
-	mux *http.ServeMux
-	app *app.Application
+	ctx  context.Context
+	mux  *http.ServeMux
+	auth handlers.AuthHandler
 }
 
 func (controller *apiController) SetUpRoute() {
+
+	auth := "/auth"
+	http.HandleFunc(http.MethodPost+" "+auth+"/login", controller.auth.Login)
 }
 
-func NewAPIController(ctx context.Context, app *app.Application, mux *http.ServeMux) *apiController {
+func NewAPIController(ctx context.Context, mux *http.ServeMux, configs configs.Config) *apiController {
+	auth := handlers.NewAuthHandler(configs.Inbound.Auth, configs.Key.ApiGateway)
 	return &apiController{
-		ctx: ctx,
-		app: app,
-		mux: mux,
+		ctx:  ctx,
+		mux:  mux,
+		auth: auth,
 	}
 }
