@@ -1,22 +1,26 @@
 package handlers
 
 import (
+	"go-service/pkg/logger"
+	"go-service/pkg/response"
 	"net/http"
 )
 
 type AuthHandler struct {
 	address       string
 	apiGatewayKey string
+	logger        *logger.Logger
 }
 
-func NewAuthHandler(address string, apiGatewayKey string) AuthHandler {
-	return AuthHandler{address: address}
+func NewAuthHandler(address string, apiGatewayKey string, logger *logger.Logger) AuthHandler {
+	return AuthHandler{address: address, apiGatewayKey: apiGatewayKey, logger: logger}
 }
 
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	//  Create a new HTTP Request
-	request, err := http.NewRequest(http.MethodPost, h.address, r.Body)
+	request, err := http.NewRequest(http.MethodPost, h.address+"/login", r.Body)
 	if err != nil {
+		h.logger.LogError(err.Error(), nil)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
@@ -26,16 +30,12 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	request.Header.Add("API-GATEWAY-KEY", h.apiGatewayKey)
 
 	client := &http.Client{}
-	response, err := client.Do(request)
+	resp, err := client.Do(request)
 	if err != nil {
+		h.logger.LogError(err.Error(), nil)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
-	err = response.Write(w)
-
-	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
+	response.ForwardResponse(w, resp, h.logger)
 }

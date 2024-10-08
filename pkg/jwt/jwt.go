@@ -6,25 +6,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"go-service/pkg/convert"
 	"strings"
 	"time"
 )
-
-func generateToken(header Header, payload map[string]interface{}, secretKey string) string {
-
-	headerJSON, _ := json.Marshal(header)
-	payloadJSON, _ := json.Marshal(payload)
-
-	headerBase64 := base64.RawURLEncoding.EncodeToString(headerJSON)
-	payloadBase64 := base64.RawURLEncoding.EncodeToString(payloadJSON)
-
-	signatureInput := fmt.Sprintf("%s.%s", headerBase64, payloadBase64)
-	signatureBase64 := hmacsha256(signatureInput, secretKey)
-
-	token := fmt.Sprintf("%s.%s.%s", headerBase64, payloadBase64, signatureBase64)
-	return token
-}
 
 func decodeAccessToken(token string) (int64, *Header, *AccessTokenPayload, error) {
 	var header Header
@@ -64,53 +48,7 @@ func hmacsha256(input string, secretKey string) string {
 	return signature
 }
 
-func GenerateAccessToken(userId string, secretKey string, duration time.Duration) (string, AccessTokenPayload) {
-	header := Header{Algorithm: HS256, Type: JWT}
-	accessPayload := AccessTokenPayload{
-		UserId: userId,
-		// Username:   username,
-		IssuedAt:   time.Now().Unix(),
-		Expiration: time.Now().Add(duration).Unix(),
-	}
-
-	accessPayloadMap := convert.ToMapOmitEmpty(accessPayload)
-	accessToken := generateToken(
-		header,
-		accessPayloadMap, secretKey)
-
-	return accessToken, accessPayload
-}
-
-func GereateRefreshToken(userId string, secretKey string, duration time.Duration) (string, RefreshTokenPayload) {
-	header := Header{Algorithm: HS256, Type: JWT}
-
-	refreshPayload := RefreshTokenPayload{
-		UserId:     userId,
-		IssuedAt:   time.Now().Unix(),
-		Expiration: time.Now().Add(duration).Unix(),
-	}
-
-	refreshTokenPayloadMap := convert.ToMapOmitEmpty(refreshPayload)
-	refreshToken := generateToken(
-		header,
-		refreshTokenPayloadMap,
-		secretKey)
-	return refreshToken, refreshPayload
-}
-
-func GenerateTokens(userId string, secretKey string, accessTokenDuration time.Duration, refreshTokenDuration time.Duration) TokenData {
-	accessToken, _ := GenerateAccessToken(userId, secretKey, accessTokenDuration)
-	refreshToken, _ := GereateRefreshToken(userId, secretKey, refreshTokenDuration)
-	return TokenData{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-		TokenType:    "bearer",
-		UserId:       userId,
-	}
-}
-
 func VerifyAccessToken(accessToken string, secretKey string) (int64, error) {
-
 	parts := strings.Split(accessToken, ".")
 	if len(parts) != 3 {
 		return -2, nil

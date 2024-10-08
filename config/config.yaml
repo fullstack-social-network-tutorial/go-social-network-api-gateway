@@ -4,6 +4,6 @@ address:
 inbound:
   auth: http://localhost:3000
 outbound:
-  auth: http://localhost:8080
+  auth: http://localhost:8081/auth
 key:
   apiGateway: "API-GATEWAY-KEY"

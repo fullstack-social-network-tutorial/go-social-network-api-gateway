@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"go-service/internal/configs"
 	"go-service/internal/controller"
+	"go-service/pkg/handler_fnc"
+	"go-service/pkg/logger"
 	"log"
 	"net/http"
 	"os"
@@ -20,12 +22,12 @@ func main() {
 		log.Fatal(err)
 		return
 	}
-
-	ctr := controller.NewAPIController(ctx, mux, configs)
+	logger := logger.NewLogger()
+	ctr := controller.NewAPIController(ctx, mux, configs, logger)
 	ctr.SetUpRoute()
 
 	done := make(chan bool)
-	go http.ListenAndServe(fmt.Sprintf("%v:%v", configs.Address.Host, configs.Port), nil)
+	go http.ListenAndServe(fmt.Sprintf("%v:%v", configs.Address.Host, configs.Port), handler_fnc.LogRequestHandler(mux, logger))
 	log.Printf("Server started at %v:%v", configs.Host, configs.Port)
 	<-done
 }
