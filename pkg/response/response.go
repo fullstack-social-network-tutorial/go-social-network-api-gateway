@@ -26,10 +26,9 @@ func ForwardResponse(w http.ResponseWriter, resp *http.Response, logger *logger.
 
 	// Copy the headers from the called request's response to your response
 	for name, values := range resp.Header {
-		for _, value := range values {
-			w.Header().Set(name, value)
-		}
+		w.Header()[name] = values
 	}
+
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		logger.LogError(err.Error(), nil)
